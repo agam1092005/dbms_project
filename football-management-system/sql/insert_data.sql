@@ -1,3 +1,5 @@
+USE football_management_system;
+
 INSERT INTO Team (teamid, team_name) VALUES
 (1, 'Manchester United'),
 (2, 'Chelsea'),

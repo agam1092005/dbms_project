@@ -1,3 +1,5 @@
+USE football_management_system;
+
 -- Team
 CREATE TABLE Team (
   teamid INT PRIMARY KEY,

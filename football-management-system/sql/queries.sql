@@ -1,3 +1,5 @@
+USE football_management_system;
+
 SELECT P.fullname AS player_name, T.team_name
 FROM Player P
 JOIN Team T ON P.teamid = T.teamid;
@@ -61,5 +63,3 @@ HAVING COUNT(G.goalid) = (
     GROUP BY playerid
   ) AS counts
 );
-
-
