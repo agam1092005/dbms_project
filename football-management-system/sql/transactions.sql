@@ -17,9 +17,10 @@ BEGIN
   VALUES (404, '2025-03-20', 2, 3, 302);
 
   -- Insert Goals
-  INSERT INTO Goal (goalid, playerid, matchid, time) VALUES
-  (506, 103, 404, '00:20:00'),
-  (507, 104, 404, '00:35:00');
+  INSERT INTO Goal (goalid, playerid, matchid, time_minute) VALUES
+  (506, 103, 404, 20),
+  (507, 104, 404, 35);
+
 
   COMMIT;
 
