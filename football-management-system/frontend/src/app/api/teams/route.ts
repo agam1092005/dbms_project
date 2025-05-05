@@ -14,7 +14,7 @@ export async function GET() {
     connection = await mysql.createConnection(dbConfig)
 
     const [rows] = await connection.execute(`
-      SELECT t.*, m.fullname as manager_name
+      SELECT t.*, m.fullname as manager_name, m.managerid
       FROM Team t
       LEFT JOIN Manager m ON t.teamid = m.teamid
       ORDER BY t.team_name
@@ -22,9 +22,9 @@ export async function GET() {
 
     return NextResponse.json(rows)
   } catch (error) {
-    console.error('Error fetching teams:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch teams' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Team added successfully', result })
   } catch (error) {
-    console.error('Error adding team:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to add team' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -86,9 +86,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ message: 'Team deleted successfully' })
   } catch (error) {
-    console.error('Error deleting team:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to delete team' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {

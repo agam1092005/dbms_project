@@ -33,9 +33,9 @@ export async function GET() {
 
     return NextResponse.json(rows)
   } catch (error) {
-    console.error('Error fetching matches:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch matches' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -96,9 +96,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Match added successfully', result })
   } catch (error) {
-    console.error('Error adding match:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to add match' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -127,9 +127,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ message: 'Match deleted successfully' })
   } catch (error) {
-    console.error('Error deleting match:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to delete match' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {

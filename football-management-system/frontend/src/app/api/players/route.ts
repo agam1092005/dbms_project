@@ -22,9 +22,9 @@ export async function GET() {
 
     return NextResponse.json(rows)
   } catch (error) {
-    console.error('Error fetching players:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch players' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -67,9 +67,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Player added successfully', result })
   } catch (error) {
-    console.error('Error adding player:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to add player' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -98,9 +98,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ message: 'Player deleted successfully' })
   } catch (error) {
-    console.error('Error deleting player:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to delete player' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {

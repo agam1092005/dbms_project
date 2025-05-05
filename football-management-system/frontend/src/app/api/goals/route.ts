@@ -23,9 +23,9 @@ export async function GET() {
 
     return NextResponse.json(rows)
   } catch (error) {
-    console.error('Error fetching goals:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch goals' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -79,9 +79,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Goal added successfully', result })
   } catch (error) {
-    console.error('Error adding goal:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to add goal' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {
@@ -110,9 +110,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ message: 'Goal deleted successfully' })
   } catch (error) {
-    console.error('Error deleting goal:', error)
+    const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to delete goal' },
+      { error: sqlMessage },
       { status: 500 }
     )
   } finally {

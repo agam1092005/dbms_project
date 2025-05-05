@@ -27,16 +27,31 @@ export default function Home() {
       color: 'bg-red-500'
     },
     {
+      title: 'Stadiums',
+      description: 'Manage stadiums and venues',
+      link: '/stadiums',
+      color: 'bg-indigo-500'
+    },
+    {
       title: 'Operation Logs',
       description: 'View system operation logs',
       link: '/logs',
       color: 'bg-purple-500'
+    },
+    {
+      title: 'Managers',
+      description: 'Assign and manage team managers',
+      link: '/managers',
+      color: 'bg-pink-500'
     }
   ]
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Football Management System</h1>
+    <>
+    <div className='flex items-center justify-center m-10'>
+      <img className="h-64 flex items-center justify-center" src="football.svg" alt="Football Logo" />
+    </div>
+    <div className="h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((feature, index) => (
           <Link 
@@ -49,6 +64,9 @@ export default function Home() {
           </Link>
         ))}
       </div>
+      <h2 className='mt-20 justify-center items-center flex font-bold'>Made by</h2>
+      <h2 className='justify-center items-center flex'>Agampreet Singh, Aryan Gupta, Ishant Madaan, Puneet Garg</h2>
     </div>
+    </>
   )
 }

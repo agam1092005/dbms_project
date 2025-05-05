@@ -78,9 +78,11 @@ export default function LogsPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    log.operation_type === 'INSERT_PLAYER' 
+                    log.operation_type.startsWith('INSERT')
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      : log.operation_type.startsWith('DELETE')
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {log.operation_type}
                   </span>

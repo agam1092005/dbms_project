@@ -1,24 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface Stadium {
   stadiumid: number
   stadium_name: string
-  location: string
-  capacity: number
+  city: string
 }
 
 export default function StadiumsPage() {
   const [stadiums, setStadiums] = useState<Stadium[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [newStadium, setNewStadium] = useState({
     stadium_name: '',
-    location: '',
-    capacity: '',
+    city: ''
   })
-  const [error, setError] = useState('')
-  const router = useRouter()
 
   useEffect(() => {
     fetchStadiums()
@@ -27,12 +25,15 @@ export default function StadiumsPage() {
   const fetchStadiums = async () => {
     try {
       const response = await fetch('/api/stadiums')
-      if (!response.ok) throw new Error('Failed to fetch stadiums')
+      if (!response.ok) {
+        throw new Error('Failed to fetch stadiums')
+      }
       const data = await response.json()
       setStadiums(data)
     } catch (err) {
-      setError('Failed to load stadiums')
-      console.error(err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -44,110 +45,130 @@ export default function StadiumsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          stadium_name: newStadium.stadium_name,
-          location: newStadium.location,
-          capacity: parseInt(newStadium.capacity),
-        }),
+        body: JSON.stringify(newStadium),
       })
 
-      if (!response.ok) throw new Error('Failed to add stadium')
-      
-      setNewStadium({
-        stadium_name: '',
-        location: '',
-        capacity: '',
-      })
+      if (!response.ok) {
+        throw new Error('Failed to add stadium')
+      }
+
+      setShowAddForm(false)
+      setNewStadium({ stadium_name: '', city: '' })
       fetchStadiums()
     } catch (err) {
-      setError('Failed to add stadium')
-      console.error(err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
     }
   }
 
   const handleDeleteStadium = async (stadiumid: number) => {
-    if (!confirm('Are you sure you want to delete this stadium?')) return
+    if (!confirm('Are you sure you want to delete this stadium?')) {
+      return
+    }
 
     try {
       const response = await fetch(`/api/stadiums?stadiumid=${stadiumid}`, {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete stadium')
-      
+      if (!response.ok) {
+        throw new Error('Failed to delete stadium')
+      }
+
       fetchStadiums()
     } catch (err) {
-      setError('Failed to delete stadium')
-      console.error(err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <p>Error: {error}</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Stadiums</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Stadiums</h1>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          {showAddForm ? 'Cancel' : 'Add Stadium'}
+        </button>
+      </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleAddStadium} className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            value={newStadium.stadium_name}
-            onChange={(e) => setNewStadium({ ...newStadium, stadium_name: e.target.value })}
-            placeholder="Stadium Name"
-            className="p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            value={newStadium.location}
-            onChange={(e) => setNewStadium({ ...newStadium, location: e.target.value })}
-            placeholder="Location"
-            className="p-2 border rounded"
-            required
-          />
-          <input
-            type="number"
-            value={newStadium.capacity}
-            onChange={(e) => setNewStadium({ ...newStadium, capacity: e.target.value })}
-            placeholder="Capacity"
-            className="p-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mt-4">
+      {showAddForm && (
+        <form onSubmit={handleAddStadium} className="bg-white p-6 rounded-lg shadow-md space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Stadium Name</label>
+            <input
+              type="text"
+              value={newStadium.stadium_name}
+              onChange={(e) => setNewStadium({ ...newStadium, stadium_name: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">City</label>
+            <input
+              type="text"
+              value={newStadium.city}
+              onChange={(e) => setNewStadium({ ...newStadium, city: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
             Add Stadium
           </button>
-        </div>
-      </form>
+        </form>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stadiums.map((stadium) => (
-          <div
-            key={stadium.stadiumid}
-            className="border rounded p-4 flex justify-between items-center"
-          >
-            <div>
-              <p className="text-lg font-semibold">{stadium.stadium_name}</p>
-              <p className="text-gray-600">{stadium.location}</p>
-              <p className="text-gray-600">Capacity: {stadium.capacity.toLocaleString()}</p>
-            </div>
-            <button
-              onClick={() => handleDeleteStadium(stadium.stadiumid)}
-              className="text-red-500 hover:text-red-700"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stadium Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {stadiums.map((stadium) => (
+              <tr key={stadium.stadiumid} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {stadium.stadium_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {stadium.city}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button
+                    onClick={() => handleDeleteStadium(stadium.stadiumid)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

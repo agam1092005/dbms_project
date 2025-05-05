@@ -8,13 +8,17 @@ const dbConfig = {
   database: 'football_management_system',
 }
 
+// GET: List all managers with their teams
 export async function GET() {
   let connection
   try {
     connection = await mysql.createConnection(dbConfig)
-
-    const [rows] = await connection.execute('SELECT * FROM Stadium ORDER BY stadium_name')
-
+    const [rows] = await connection.execute(`
+      SELECT m.managerid, m.fullname, t.teamid, t.team_name
+      FROM Manager m
+      JOIN Team t ON m.teamid = t.teamid
+      ORDER BY t.team_name
+    `)
     return NextResponse.json(rows)
   } catch (error) {
     const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
@@ -29,26 +33,35 @@ export async function GET() {
   }
 }
 
+// POST: Assign a manager to a team
 export async function POST(request: Request) {
   let connection
   try {
-    const { stadium_name, city } = await request.json()
-
-    if (!stadium_name || !city) {
+    const { fullname, teamid } = await request.json()
+    if (!fullname || !teamid) {
       return NextResponse.json(
-        { error: 'Stadium name and city are required' },
+        { error: 'Manager name and team are required' },
         { status: 400 }
       )
     }
-
     connection = await mysql.createConnection(dbConfig)
-
-    const [result] = await connection.execute(
-      'INSERT INTO Stadium (stadium_name, city) VALUES (?, ?)',
-      [stadium_name, city]
+    // Check if team already has a manager
+    const [existing] = await connection.execute(
+      'SELECT managerid FROM Manager WHERE teamid = ?',
+      [teamid]
     )
-
-    return NextResponse.json({ message: 'Stadium added successfully', result })
+    if (Array.isArray(existing) && existing.length > 0) {
+      return NextResponse.json(
+        { error: 'This team already has a manager' },
+        { status: 400 }
+      )
+    }
+    // Insert manager
+    const [result] = await connection.execute(
+      'INSERT INTO Manager (fullname, teamid) VALUES (?, ?)',
+      [fullname, teamid]
+    )
+    return NextResponse.json({ message: 'Manager assigned successfully', result })
   } catch (error) {
     const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
@@ -62,24 +75,21 @@ export async function POST(request: Request) {
   }
 }
 
+// DELETE: Remove a manager
 export async function DELETE(request: Request) {
   let connection
   try {
     const { searchParams } = new URL(request.url)
-    const stadiumid = searchParams.get('stadiumid')
-
-    if (!stadiumid) {
+    const managerid = searchParams.get('managerid')
+    if (!managerid) {
       return NextResponse.json(
-        { error: 'Stadium ID is required' },
+        { error: 'Manager ID is required' },
         { status: 400 }
       )
     }
-
     connection = await mysql.createConnection(dbConfig)
-
-    await connection.execute('DELETE FROM Stadium WHERE stadiumid = ?', [stadiumid])
-
-    return NextResponse.json({ message: 'Stadium deleted successfully' })
+    await connection.execute('DELETE FROM Manager WHERE managerid = ?', [managerid])
+    return NextResponse.json({ message: 'Manager deleted successfully' })
   } catch (error) {
     const sqlMessage = error.sqlMessage || error.message || 'Unknown error';
     return NextResponse.json(
